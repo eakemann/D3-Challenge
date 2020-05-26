@@ -1,7 +1,8 @@
-const svgWidth = 960;
+const svgWidth = 900;
 const svgHeight = 500;
 
 const margin = {
+//Set where the chart appears on the page
   top: 20,
   right: 40,
   bottom: 60,
@@ -24,19 +25,56 @@ let chartGroup = svg.append('g')
 d3.csv('combined_data.csv', function(err, combData) {
   if (err) throw err;
 
-  //parse data, cast as numbers
+//parse data
   combData.forEach(function(data) {
-    data.insurance = +data.poverty;
-    data.checkup = +data.income;
+    data.poverty = +data.poverty;
+    data.income = +data.income;
   });
+
+  //Create our variables
+  var xMin;
+  var xMax;
+  var yMin;
+  var yMax;
+
+  //determine what data is used in our axes
+  var currentX = "poverty";
+  var currentY = "income";
+
+  //Set Xmin
+  function xMinMax() {
+      xMin = d3.min(combData, function(d) {
+      return parseFloat(d[currentX]);
+    });  
+  //Set Xmax
+       xMax = d3.max(combData, function(d) {
+      return parseFloat(d[currentX]);
+      });
+    }
+
+  //Set ymin
+  function yMinMax() {
+    yMin = d3.min(combData, function(d) {
+    return parseFloat(d[currentY]);
+  });  
+  //Set ymax
+     yMax = d3.max(combData, function(d) {
+    return parseFloat(d[currentY]);
+    });
+  }
+
+  //Call the functions
+  xMinMax();
+  yMinMax();
+
 
   //create scale functions
   let xLinearScale = d3.scaleLinear()
-    .domain([0, d3.max(combData, d => d.poverty)])
+    .domain([xMin -0.3, xMax +0.5])
     .range([0, width]);
 
   let yLinearScale = d3.scaleLinear()
-    .domain([0, d3.max(combData, d => d.income)])
+    .domain([yMin, yMax])
     .range([height, 0]);
 
   //create axis functions
@@ -71,7 +109,7 @@ d3.csv('combined_data.csv', function(err, combData) {
           
   let textLabels = circleText
     .attr('x', d => xLinearScale(d.poverty))
-    .attr('y', d => (yLinearScale(d.income) * 1.08))
+    .attr('y', d => (yLinearScale(d.income) * 1.01))
     .style('text-anchor', 'middle')
     .style('font-size', '9px')
     .text(d => d.state)
